@@ -2450,11 +2450,669 @@
 
 
 
+// import React, { useEffect, useState } from 'react';
+// import axios from 'axios';
+// import './index.css';
+// import { AptosClient } from 'aptos';
+// import { connectMartianWallet } from './utils/connectMartian';
+// import NavBar from './components/NavBar';
+// import ProfileDashboard from './components/ProfileDashboard';
+// import CoinCard from './components/CoinCard';
+// import Filters from './components/Filters';
+// import BuySellModal from './components/BuySellModal';
+// import AssetTable from './components/AssetTable';
+// import SummaryHeader from './components/SummaryHeader';
+
+// const aptos = new AptosClient('https://fullnode.mainnet.aptoslabs.com');
+
+// function App() {
+//   const [coins, setCoins] = useState([]);
+//   const [filteredCoins, setFilteredCoins] = useState([]);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [sortBy, setSortBy] = useState('rank');
+//   const [chartRange, setChartRange] = useState('7d');
+//   const [walletAddress, setWalletAddress] = useState(null);
+//   const [aptosBalance, setAptosBalance] = useState(null);
+//   const [profileTab, setProfileTab] = useState(false);
+//   const [selectedCoin, setSelectedCoin] = useState(null);
+//   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+//   const [tradeType, setTradeType] = useState('buy');
+//   const [viewMode, setViewMode] = useState('cards');
+
+//   const coinList = 'bitcoin,ethereum,uniswap,aave,curve-dao-token,chainlink,litecoin,maker,compound-governance-token,the-graph,optimism,arbitrum,avalanche-2,solana,toncoin';
+
+//   const handleConnectWallet = async () => {
+//     try {
+//       const { address } = await connectMartianWallet();
+//       setWalletAddress(address);
+//       const res = await aptos.getAccountResources(address);
+//       const coinStore = res.find((r) => r.type === '0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>');
+//       const balance = coinStore ? parseInt(coinStore.data.coin.value) / 1e8 : 0;
+//       setAptosBalance(balance);
+//     } catch (err) {
+//       alert(err.message);
+//     }
+//   };
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       const res = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+//         params: {
+//           vs_currency: 'usd',
+//           ids: coinList,
+//           order: 'market_cap_desc',
+//           sparkline: true,
+//           price_change_percentage: '1h,24h,7d',
+//         },
+//       });
+//       setCoins(res.data);
+//       setFilteredCoins(res.data);
+//     };
+//     fetchData();
+//   }, []);
+
+//   useEffect(() => {
+//     let data = [...coins];
+//     if (searchTerm) {
+//       data = data.filter((coin) =>
+//         coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+//       );
+//     }
+//     if (sortBy === 'volume') {
+//       data.sort((a, b) => b.total_volume - a.total_volume);
+//     } else {
+//       data.sort((a, b) => a.market_cap_rank - b.market_cap_rank);
+//     }
+//     setFilteredCoins(data);
+//   }, [searchTerm, sortBy, coins]);
+
+//   const handleTrade = (coin, isBuy) => {
+//     setSelectedCoin(coin);
+//     setTradeType(isBuy ? 'buy' : 'sell');
+//     setIsBuyModalOpen(true);
+//   };
+
+//   // 👉 Compute stats for SummaryHeader
+//   const marketSize = filteredCoins.reduce((sum, coin) => sum + (coin.market_cap || 0), 0);
+//   const totalBorrowed = filteredCoins.reduce((sum, coin) => sum + (coin.total_volume || 0), 0);
+//   const lentOut = marketSize > 0 ? ((totalBorrowed / marketSize) * 100).toFixed(2) : 0;
+
+//   return (
+//     <div>
+//       <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white p-4">
+//         <NavBar
+//           walletAddress={walletAddress}
+//           onConnect={handleConnectWallet}
+//           profileTab={profileTab}
+//           setProfileTab={setProfileTab}
+//         />
+
+//         {profileTab ? (
+//           <ProfileDashboard walletAddress={walletAddress} aptosBalance={aptosBalance} />
+//         ) : (
+//           <>
+//             <SummaryHeader
+//               marketSize={marketSize}
+//               totalBorrowed={totalBorrowed}
+//               lentOut={lentOut}
+//             />
+
+//             <div className="flex justify-end mb-4">
+//               <button
+//                 onClick={() => setViewMode(viewMode === 'cards' ? 'table' : 'cards')}
+//                 className="px-3 py-1 bg-indigo-600 text-white rounded shadow"
+//               >
+//                 Toggle View: {viewMode === 'cards' ? 'Table' : 'Cards'}
+//               </button>
+//             </div>
+
+//             <Filters
+//               searchTerm={searchTerm}
+//               setSearchTerm={setSearchTerm}
+//               sortBy={sortBy}
+//               setSortBy={setSortBy}
+//               chartRange={chartRange}
+//               setChartRange={setChartRange}
+//             />
+
+//             {viewMode === 'cards' ? (
+//               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+//                 {filteredCoins.map((coin) => (
+//                   <CoinCard
+//                     key={coin.id}
+//                     coin={coin}
+//                     chartRange={chartRange}
+//                     onTrade={handleTrade}
+//                   />
+//                 ))}
+//               </div>
+//             ) : (
+//               <AssetTable coins={filteredCoins} onTrade={handleTrade} />
+//             )}
+//           </>
+//         )}
+
+//         {isBuyModalOpen && selectedCoin && (
+//           <BuySellModal
+//             coin={selectedCoin}
+//             tradeType={tradeType}
+//             onClose={() => setIsBuyModalOpen(false)}
+//             walletAddress={walletAddress}
+//             aptosClient={aptos}
+//           />
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default App;
+
+
+
+// // App.jsx
+// import React, { useEffect, useState } from 'react';
+// import axios from 'axios';
+// import './index.css';
+// import { AptosClient } from 'aptos';
+// import { connectMartianWallet } from './utils/connectMartian';
+// import NavBar from './components/NavBar';
+// import ProfileDashboard from './components/ProfileDashboard';
+// import CoinCard from './components/CoinCard';
+// import Filters from './components/Filters';
+// import BuySellModal from './components/BuySellModal';
+// import AssetTable from './components/AssetTable';
+// import SummaryHeader from './components/SummaryHeader';
+// import fetchBalances from './utils/fetchBalances';
+
+// const APTOS_MAINNET = 'https://fullnode.mainnet.aptoslabs.com';
+// const APTOS_TESTNET = 'https://fullnode.testnet.aptoslabs.com';
+// const aptos = new AptosClient(APTOS_MAINNET);
+
+// function App() {
+//   const [coins, setCoins] = useState([]);
+//   const [filteredCoins, setFilteredCoins] = useState([]);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [sortBy, setSortBy] = useState('rank');
+//   const [chartRange, setChartRange] = useState('7d');
+//   const [walletAddress, setWalletAddress] = useState(null);
+//   const [aptosBalance, setAptosBalance] = useState(null);
+//   const [profileTab, setProfileTab] = useState(false);
+//   const [selectedCoin, setSelectedCoin] = useState(null);
+//   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+//   const [tradeType, setTradeType] = useState('buy');
+//   const [viewMode, setViewMode] = useState('cards');
+//   const [marketStats, setMarketStats] = useState({ marketSize: 0, totalBorrowed: 0, lentOut: 0 });
+
+//   const coinList = 'bitcoin,ethereum,uniswap,aave,curve-dao-token,chainlink,litecoin,maker,compound-governance-token,the-graph,optimism,arbitrum,avalanche-2,solana,toncoin';
+
+//   const handleConnectWallet = async () => {
+//     try {
+//       const { address } = await connectMartianWallet();
+//       setWalletAddress(address);
+//       const balances = await fetchBalances(address);
+//       setAptosBalance(balances.apt);
+//       setMarketStats({
+//         marketSize: balances.marketSize,
+//         totalBorrowed: balances.totalBorrowed,
+//         lentOut: balances.lentOut,
+//       });
+//     } catch (err) {
+//       alert(err.message);
+//     }
+//   };
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       const res = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+//         params: {
+//           vs_currency: 'usd',
+//           ids: coinList,
+//           order: 'market_cap_desc',
+//           sparkline: true,
+//           price_change_percentage: '1h,24h,7d',
+//         },
+//       });
+//       setCoins(res.data);
+//       setFilteredCoins(res.data);
+//     };
+//     fetchData();
+//   }, []);
+
+//   useEffect(() => {
+//     let data = [...coins];
+//     if (searchTerm) {
+//       data = data.filter((coin) =>
+//         coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+//       );
+//     }
+//     if (sortBy === 'volume') {
+//       data.sort((a, b) => b.total_volume - a.total_volume);
+//     } else {
+//       data.sort((a, b) => a.market_cap_rank - b.market_cap_rank);
+//     }
+//     setFilteredCoins(data);
+//   }, [searchTerm, sortBy, coins]);
+
+//   const handleTrade = (coin, isBuy) => {
+//     setSelectedCoin(coin);
+//     setTradeType(isBuy ? 'buy' : 'sell');
+//     setIsBuyModalOpen(true);
+//   };
+
+//   return (
+//     <div>
+//       <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white p-4">
+//         <NavBar
+//           walletAddress={walletAddress}
+//           onConnect={handleConnectWallet}
+//           profileTab={profileTab}
+//           setProfileTab={setProfileTab}
+//         />
+
+//         {profileTab ? (
+//           <ProfileDashboard walletAddress={walletAddress} aptosBalance={aptosBalance} />
+//         ) : (
+//           <>
+//             <SummaryHeader
+//               marketSize={marketStats.marketSize}
+//               totalBorrowed={marketStats.totalBorrowed}
+//               lentOut={marketStats.lentOut}
+//             />
+//             <div className="flex justify-end mb-4">
+//               <button
+//                 onClick={() => setViewMode(viewMode === 'cards' ? 'table' : 'cards')}
+//                 className="px-3 py-1 bg-indigo-600 text-white rounded shadow"
+//               >
+//                 Toggle View: {viewMode === 'cards' ? 'Table' : 'Cards'}
+//               </button>
+//             </div>
+//             <Filters
+//               searchTerm={searchTerm}
+//               setSearchTerm={setSearchTerm}
+//               sortBy={sortBy}
+//               setSortBy={setSortBy}
+//               chartRange={chartRange}
+//               setChartRange={setChartRange}
+//             />
+
+//             {viewMode === 'cards' ? (
+//               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+//                 {filteredCoins.map((coin) => (
+//                   <CoinCard
+//                     key={coin.id}
+//                     coin={coin}
+//                     chartRange={chartRange}
+//                     onTrade={handleTrade}
+//                   />
+//                 ))}
+//               </div>
+//             ) : (
+//               <AssetTable coins={filteredCoins} onTrade={handleTrade} />
+//             )}
+//           </>
+//         )}
+
+//         {isBuyModalOpen && selectedCoin && (
+//           <BuySellModal
+//             coin={selectedCoin}
+//             tradeType={tradeType}
+//             onClose={() => setIsBuyModalOpen(false)}
+//             walletAddress={walletAddress}
+//             aptosClient={aptos}
+//           />
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default App;
+
+
+
+
+
+
+// // App.jsx
+// import React, { useEffect, useState } from 'react';
+// import axios from 'axios';
+// import './index.css';
+// import { AptosClient } from 'aptos';
+// import { connectMartianWallet } from './utils/connectMartian';
+// import { fetchBalances } from './utils/fetchBalances';
+
+// import NavBar from './components/NavBar';
+// import ProfileDashboard from './components/ProfileDashboard';
+// import CoinCard from './components/CoinCard';
+// import Filters from './components/Filters';
+// import BuySellModal from './components/BuySellModal';
+// import AssetTable from './components/AssetTable';
+// import SummaryHeader from './components/SummaryHeader';
+
+// const aptos = new AptosClient('https://fullnode.mainnet.aptoslabs.com');
+
+// function App() {
+//   const [coins, setCoins] = useState([]);
+//   const [filteredCoins, setFilteredCoins] = useState([]);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [sortBy, setSortBy] = useState('rank');
+//   const [chartRange, setChartRange] = useState('7d');
+//   const [walletAddress, setWalletAddress] = useState(null);
+//   const [aptosBalance, setAptosBalance] = useState(null);
+//   const [profileTab, setProfileTab] = useState(false);
+//   const [selectedCoin, setSelectedCoin] = useState(null);
+//   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+//   const [tradeType, setTradeType] = useState('buy');
+//   const [viewMode, setViewMode] = useState('cards');
+
+//   const [marketSize, setMarketSize] = useState(0);
+//   const [totalBorrowed, setTotalBorrowed] = useState(0);
+//   const [lentOut, setLentOut] = useState(0);
+
+//   const coinList = 'bitcoin,ethereum,uniswap,aave,curve-dao-token,chainlink,litecoin,maker,compound-governance-token,the-graph,optimism,arbitrum,avalanche-2,solana,toncoin';
+
+//   const handleConnectWallet = async () => {
+//     try {
+//       const { address } = await connectMartianWallet();
+//       setWalletAddress(address);
+
+//       const { aptosBalance, marketSize, totalBorrowed, lentOut } = await fetchBalances(address);
+//       setAptosBalance(aptosBalance);
+//       setMarketSize(marketSize);
+//       setTotalBorrowed(totalBorrowed);
+//       setLentOut(lentOut);
+//     } catch (err) {
+//       alert(err.message);
+//     }
+//   };
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       const res = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+//         params: {
+//           vs_currency: 'usd',
+//           ids: coinList,
+//           order: 'market_cap_desc',
+//           sparkline: true,
+//           price_change_percentage: '1h,24h,7d',
+//         },
+//       });
+//       setCoins(res.data);
+//       setFilteredCoins(res.data);
+//     };
+//     fetchData();
+//   }, []);
+
+//   useEffect(() => {
+//     let data = [...coins];
+//     if (searchTerm) {
+//       data = data.filter((coin) =>
+//         coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+//       );
+//     }
+//     if (sortBy === 'volume') {
+//       data.sort((a, b) => b.total_volume - a.total_volume);
+//     } else {
+//       data.sort((a, b) => a.market_cap_rank - b.market_cap_rank);
+//     }
+//     setFilteredCoins(data);
+//   }, [searchTerm, sortBy, coins]);
+
+//   const handleTrade = (coin, isBuy) => {
+//     setSelectedCoin(coin);
+//     setTradeType(isBuy ? 'buy' : 'sell');
+//     setIsBuyModalOpen(true);
+//   };
+
+//   return (
+//     <div>
+//       <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white p-4">
+//         <NavBar
+//           walletAddress={walletAddress}
+//           onConnect={handleConnectWallet}
+//           profileTab={profileTab}
+//           setProfileTab={setProfileTab}
+//         />
+
+//         {profileTab ? (
+//           <ProfileDashboard walletAddress={walletAddress} aptosBalance={aptosBalance} />
+//         ) : (
+//           <>
+//             <SummaryHeader
+//               marketSize={marketSize}
+//               totalBorrowed={totalBorrowed}
+//               lentOut={lentOut}
+//             />
+//             <div className="flex justify-end mb-4">
+//               <button
+//                 onClick={() => setViewMode(viewMode === 'cards' ? 'table' : 'cards')}
+//                 className="px-3 py-1 bg-indigo-600 text-white rounded shadow"
+//               >
+//                 Toggle View: {viewMode === 'cards' ? 'Table' : 'Cards'}
+//               </button>
+//             </div>
+//             <Filters
+//               searchTerm={searchTerm}
+//               setSearchTerm={setSearchTerm}
+//               sortBy={sortBy}
+//               setSortBy={setSortBy}
+//               chartRange={chartRange}
+//               setChartRange={setChartRange}
+//             />
+
+//             {viewMode === 'cards' ? (
+//               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+//                 {filteredCoins.map((coin) => (
+//                   <CoinCard
+//                     key={coin.id}
+//                     coin={coin}
+//                     chartRange={chartRange}
+//                     onTrade={handleTrade}
+//                   />
+//                 ))}
+//               </div>
+//             ) : (
+//               <AssetTable coins={filteredCoins} onTrade={handleTrade} />
+//             )}
+//           </>
+//         )}
+
+//         {isBuyModalOpen && selectedCoin && (
+//           <BuySellModal
+//             coin={selectedCoin}
+//             tradeType={tradeType}
+//             onClose={() => setIsBuyModalOpen(false)}
+//             walletAddress={walletAddress}
+//             aptosClient={aptos}
+//           />
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default App;
+
+
+
+
+
+// // App.jsx
+// import React, { useEffect, useState } from 'react';
+// import axios from 'axios';
+// import './index.css';
+// import { AptosClient } from 'aptos';
+// import { connectMartianWallet } from './utils/connectMartian';
+// import { fetchBalances } from './utils/fetchBalances';
+// import NavBar from './components/NavBar';
+// import ProfileDashboard from './components/ProfileDashboard';
+// import CoinCard from './components/CoinCard';
+// import Filters from './components/Filters';
+// import BuySellModal from './components/BuySellModal';
+// import AssetTable from './components/AssetTable';
+// import SummaryHeader from './components/SummaryHeader';
+
+// const aptos = new AptosClient('https://fullnode.mainnet.aptoslabs.com');
+
+// function App() {
+//   const [coins, setCoins] = useState([]);
+//   const [filteredCoins, setFilteredCoins] = useState([]);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [sortBy, setSortBy] = useState('rank');
+//   const [chartRange, setChartRange] = useState('7d');
+//   const [walletAddress, setWalletAddress] = useState(null);
+//   const [aptosBalance, setAptosBalance] = useState(null);
+//   const [profileTab, setProfileTab] = useState(false);
+//   const [selectedCoin, setSelectedCoin] = useState(null);
+//   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+//   const [tradeType, setTradeType] = useState('buy');
+//   const [viewMode, setViewMode] = useState('cards');
+
+//   const coinList = 'bitcoin,ethereum,uniswap,aave,curve-dao-token,chainlink,litecoin,maker,compound-governance-token,the-graph,optimism,arbitrum,avalanche-2,solana,toncoin';
+
+//   const handleConnectWallet = async () => {
+//     try {
+//       const { address } = await connectMartianWallet();
+//       setWalletAddress(address);
+//       const res = await aptos.getAccountResources(address);
+//       const coinStore = res.find((r) => r.type === '0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>');
+//       const balance = coinStore ? parseInt(coinStore.data.coin.value) / 1e8 : 0;
+//       setAptosBalance(balance);
+//     } catch (err) {
+//       alert(err.message);
+//     }
+//   };
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       const res = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+//         params: {
+//           vs_currency: 'usd',
+//           ids: coinList,
+//           order: 'market_cap_desc',
+//           sparkline: true,
+//           price_change_percentage: '1h,24h,7d',
+//         },
+//       });
+//       setCoins(res.data);
+//       setFilteredCoins(res.data);
+//     };
+//     fetchData();
+//   }, []);
+
+//   useEffect(() => {
+//     let data = [...coins];
+//     if (searchTerm) {
+//       data = data.filter((coin) =>
+//         coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+//       );
+//     }
+//     if (sortBy === 'volume') {
+//       data.sort((a, b) => b.total_volume - a.total_volume);
+//     } else {
+//       data.sort((a, b) => a.market_cap_rank - b.market_cap_rank);
+//     }
+//     setFilteredCoins(data);
+//   }, [searchTerm, sortBy, coins]);
+
+//   const handleTrade = (coin, isBuy) => {
+//     setSelectedCoin(coin);
+//     setTradeType(isBuy ? 'buy' : 'sell');
+//     setIsBuyModalOpen(true);
+//   };
+
+//   // 👉 Compute stats for SummaryHeader
+//   const marketSize = filteredCoins.reduce((sum, coin) => sum + (coin.market_cap || 0), 0);
+//   const totalBorrowed = filteredCoins.reduce((sum, coin) => sum + (coin.total_volume || 0), 0);
+//   const lentOut = marketSize > 0 ? ((totalBorrowed / marketSize) * 100).toFixed(2) : 0;
+
+//   return (
+//     <div>
+//       <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white p-4">
+//         <NavBar
+//           walletAddress={walletAddress}
+//           onConnect={handleConnectWallet}
+//           profileTab={profileTab}
+//           setProfileTab={setProfileTab}
+//         />
+
+//         {profileTab ? (
+//           <ProfileDashboard walletAddress={walletAddress} aptosBalance={aptosBalance} />
+//         ) : (
+//           <>
+//             <SummaryHeader
+//               marketSize={marketSize}
+//               totalBorrowed={totalBorrowed}
+//               lentOut={lentOut}
+//             />
+
+//             <div className="flex justify-end mb-4">
+//               <button
+//                 onClick={() => setViewMode(viewMode === 'cards' ? 'table' : 'cards')}
+//                 className="px-3 py-1 bg-indigo-600 text-white rounded shadow"
+//               >
+//                 Toggle View: {viewMode === 'cards' ? 'Table' : 'Cards'}
+//               </button>
+//             </div>
+
+//             <Filters
+//               searchTerm={searchTerm}
+//               setSearchTerm={setSearchTerm}
+//               sortBy={sortBy}
+//               setSortBy={setSortBy}
+//               chartRange={chartRange}
+//               setChartRange={setChartRange}
+//             />
+
+//             {viewMode === 'cards' ? (
+//               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+//                 {filteredCoins.map((coin) => (
+//                   <CoinCard
+//                     key={coin.id}
+//                     coin={coin}
+//                     chartRange={chartRange}
+//                     onTrade={handleTrade}
+//                   />
+//                 ))}
+//               </div>
+//             ) : (
+//               <AssetTable coins={filteredCoins} onTrade={handleTrade} />
+//             )}
+//           </>
+//         )}
+
+//         {isBuyModalOpen && selectedCoin && (
+//           <BuySellModal
+//             coin={selectedCoin}
+//             tradeType={tradeType}
+//             onClose={() => setIsBuyModalOpen(false)}
+//             walletAddress={walletAddress}
+//             aptosClient={aptos}
+//           />
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default App;
+
+
+
+
+
+// App.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './index.css';
 import { AptosClient } from 'aptos';
 import { connectMartianWallet } from './utils/connectMartian';
+import { fetchBalances } from './utils/fetchBalances';
 import NavBar from './components/NavBar';
 import ProfileDashboard from './components/ProfileDashboard';
 import CoinCard from './components/CoinCard';
@@ -2496,17 +3154,21 @@ function App() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
-        params: {
-          vs_currency: 'usd',
-          ids: coinList,
-          order: 'market_cap_desc',
-          sparkline: true,
-          price_change_percentage: '1h,24h,7d',
-        },
-      });
-      setCoins(res.data);
-      setFilteredCoins(res.data);
+      try {
+        const res = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+          params: {
+            vs_currency: 'usd',
+            ids: coinList,
+            order: 'market_cap_desc',
+            sparkline: true,
+            price_change_percentage: '1h,24h,7d',
+          },
+        });
+        setCoins(res.data);
+        setFilteredCoins(res.data);
+      } catch (err) {
+        console.error('Error fetching coin data:', err);
+      }
     };
     fetchData();
   }, []);
@@ -2533,76 +3195,73 @@ function App() {
     setIsBuyModalOpen(true);
   };
 
-  // 👉 Compute stats for SummaryHeader
   const marketSize = filteredCoins.reduce((sum, coin) => sum + (coin.market_cap || 0), 0);
   const totalBorrowed = filteredCoins.reduce((sum, coin) => sum + (coin.total_volume || 0), 0);
   const lentOut = marketSize > 0 ? ((totalBorrowed / marketSize) * 100).toFixed(2) : 0;
 
   return (
-    <div>
-      <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white p-4">
-        <NavBar
-          walletAddress={walletAddress}
-          onConnect={handleConnectWallet}
-          profileTab={profileTab}
-          setProfileTab={setProfileTab}
-        />
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white p-4">
+      <NavBar
+        walletAddress={walletAddress}
+        onConnect={handleConnectWallet}
+        profileTab={profileTab}
+        setProfileTab={setProfileTab}
+      />
 
-        {profileTab ? (
-          <ProfileDashboard walletAddress={walletAddress} aptosBalance={aptosBalance} />
-        ) : (
-          <>
-            <SummaryHeader
-              marketSize={marketSize}
-              totalBorrowed={totalBorrowed}
-              lentOut={lentOut}
-            />
-
-            <div className="flex justify-end mb-4">
-              <button
-                onClick={() => setViewMode(viewMode === 'cards' ? 'table' : 'cards')}
-                className="px-3 py-1 bg-indigo-600 text-white rounded shadow"
-              >
-                Toggle View: {viewMode === 'cards' ? 'Table' : 'Cards'}
-              </button>
-            </div>
-
-            <Filters
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              chartRange={chartRange}
-              setChartRange={setChartRange}
-            />
-
-            {viewMode === 'cards' ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredCoins.map((coin) => (
-                  <CoinCard
-                    key={coin.id}
-                    coin={coin}
-                    chartRange={chartRange}
-                    onTrade={handleTrade}
-                  />
-                ))}
-              </div>
-            ) : (
-              <AssetTable coins={filteredCoins} onTrade={handleTrade} />
-            )}
-          </>
-        )}
-
-        {isBuyModalOpen && selectedCoin && (
-          <BuySellModal
-            coin={selectedCoin}
-            tradeType={tradeType}
-            onClose={() => setIsBuyModalOpen(false)}
-            walletAddress={walletAddress}
-            aptosClient={aptos}
+      {profileTab ? (
+        <ProfileDashboard walletAddress={walletAddress} aptosBalance={aptosBalance} />
+      ) : (
+        <>
+          <SummaryHeader
+            marketSize={marketSize || 0}
+            totalBorrowed={totalBorrowed || 0}
+            lentOut={lentOut || 0}
           />
-        )}
-      </div>
+
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => setViewMode(viewMode === 'cards' ? 'table' : 'cards')}
+              className="px-3 py-1 bg-indigo-600 text-white rounded shadow"
+            >
+              Toggle View: {viewMode === 'cards' ? 'Table' : 'Cards'}
+            </button>
+          </div>
+
+          <Filters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            chartRange={chartRange}
+            setChartRange={setChartRange}
+          />
+
+          {viewMode === 'cards' ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filteredCoins.map((coin) => (
+                <CoinCard
+                  key={coin.id}
+                  coin={coin}
+                  chartRange={chartRange}
+                  onTrade={handleTrade}
+                />
+              ))}
+            </div>
+          ) : (
+            <AssetTable assets={filteredCoins} onTrade={handleTrade} />
+          )}
+        </>
+      )}
+
+      {isBuyModalOpen && selectedCoin && (
+        <BuySellModal
+          coin={selectedCoin}
+          tradeType={tradeType}
+          onClose={() => setIsBuyModalOpen(false)}
+          walletAddress={walletAddress}
+          aptosClient={aptos}
+        />
+      )}
     </div>
   );
 }
