@@ -215,6 +215,931 @@
 
 
 
+// import React, { useState, useEffect } from "react";
+// import {
+//   connectWallet,
+//   getAvailableWallets,
+//   disconnectWallet,
+// } from "../utils/connectWallet";
+
+// function NavBar({
+//   walletAddress,
+//   profileTab,
+//   setProfileTab,
+//   setWalletAddress,
+// }) {
+//   const [connectedWallet, setConnectedWallet] = useState(null);
+//   const [availableWallets, setAvailableWallets] = useState([]);
+//   const [showWalletDropdown, setShowWalletDropdown] = useState(false);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   // Check available wallets on component mount
+//   useEffect(() => {
+//     const checkWallets = () => {
+//       const wallets = getAvailableWallets();
+//       setAvailableWallets(wallets);
+//       console.log("Available wallets detected:", wallets);
+//     };
+
+//     checkWallets();
+
+//     // Re-check wallets every 2 seconds in case user installs a wallet
+//     const interval = setInterval(checkWallets, 2000);
+
+//     return () => clearInterval(interval);
+//   }, []);
+
+//   // Auto-connect to any available wallet
+//   const handleConnectAuto = async () => {
+//     if (availableWallets.length === 0) {
+//       alert(
+//         "No Aptos wallets detected.\n\nPlease install one of the following:\n🔸 Martian: https://martianwallet.xyz/\n🔹 Petra: https://petra.app/\n🟣 Fewcha: https://fewcha.app/\n🟢 Rise: https://risewallet.io/"
+//       );
+//       return;
+//     }
+
+//     setIsLoading(true);
+//     try {
+//       const wallet = await connectWallet();
+//       setWalletAddress(wallet.address);
+//       setConnectedWallet(wallet);
+//       setShowWalletDropdown(false);
+//     } catch (err) {
+//       alert(err.message);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   // Disconnect wallet
+//   const handleDisconnect = async () => {
+//     try {
+//       if (connectedWallet) {
+//         await disconnectWallet(connectedWallet.wallet);
+//         setWalletAddress(null);
+//         setConnectedWallet(null);
+//       }
+//     } catch (err) {
+//       console.error("Disconnect error:", err);
+//       // Force disconnect even if API call fails
+//       setWalletAddress(null);
+//       setConnectedWallet(null);
+//     }
+//   };
+
+//   // Toggle wallet dropdown
+//   const toggleWalletDropdown = () => {
+//     setShowWalletDropdown(!showWalletDropdown);
+//   };
+
+//   // Get wallet icon
+//   const getWalletIcon = (walletName) => {
+//     const icons = {
+//       Martian: "🔸",
+//       Petra: "🔹",
+//       Fewcha: "🟣",
+//       Rise: "🟢",
+//     };
+//     return icons[walletName] || "💼";
+//   };
+
+//   return (
+//     <nav className="flex justify-between items-center mb-6 border-b pb-4">
+//       <h1 className="text-3xl font-bold">💳 ELEGENT Card</h1>
+
+//       <div className="flex gap-2 items-center">
+//         {/* Wallet Detection Status */}
+//         <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg">
+//           <span className="text-xs text-gray-600">Wallets:</span>
+//           {availableWallets.length > 0 ? (
+//             <div className="flex gap-1">
+//               {availableWallets.map((wallet) => (
+//                 <span
+//                   key={wallet}
+//                   className="text-xs"
+//                   title={`${wallet} detected`}
+//                 >
+//                   {getWalletIcon(wallet)}
+//                 </span>
+//               ))}
+//             </div>
+//           ) : (
+//             <span className="text-xs text-red-500">None detected</span>
+//           )}
+//         </div>
+
+//         {/* Wallet Connection Section */}
+//         <div className="relative">
+//           {walletAddress ? (
+//             <div className="flex items-center gap-2">
+//               {/* Connected Wallet Display */}
+//               <div className="flex items-center gap-2 px-3 py-2 bg-green-100 border border-green-300 rounded-lg">
+//                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+//                 <span className="text-sm font-medium">
+//                   {getWalletIcon(connectedWallet?.wallet)}{" "}
+//                   {connectedWallet?.wallet || "Connected"}
+//                 </span>
+//                 <span className="text-sm text-gray-600">
+//                   {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
+//                 </span>
+//               </div>
+
+//               {/* Disconnect Button */}
+//               <button
+//                 onClick={handleDisconnect}
+//                 className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+//               >
+//                 Disconnect
+//               </button>
+//             </div>
+//           ) : (
+//             <div className="flex items-center gap-2">
+//               {/* Auto Connect Button */}
+//               <button
+//                 onClick={handleConnectAuto}
+//                 disabled={isLoading}
+//                 className={`px-4 py-2 text-white rounded-lg transition-colors ${
+//                   availableWallets.length > 0
+//                     ? "bg-blue-600 hover:bg-blue-700"
+//                     : "bg-gray-400 cursor-not-allowed"
+//                 } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+//               >
+//                 {isLoading ? "Connecting..." : "Connect Wallet"}
+//               </button>
+
+//               {/* Wallet Selection Dropdown */}
+//               <div className="relative">
+//                 <button
+//                   onClick={toggleWalletDropdown}
+//                   className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+//                   title="View available wallets"
+//                 >
+//                   ⚙️
+//                 </button>
+
+//                 {showWalletDropdown && (
+//                   <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+//                     <div className="py-1">
+//                       <div className="px-3 py-2 text-sm font-medium text-gray-500 border-b">
+//                         Wallet Detection Status
+//                       </div>
+
+//                       {availableWallets.length > 0 ? (
+//                         <>
+//                           <div className="px-3 py-2 text-xs text-green-600 bg-green-50">
+//                             ✅ {availableWallets.length} wallet(s) detected:
+//                           </div>
+//                           {availableWallets.map((wallet) => (
+//                             <div
+//                               key={wallet}
+//                               className="px-3 py-2 text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50"
+//                             >
+//                               <span className="text-lg">
+//                                 {getWalletIcon(wallet)}
+//                               </span>
+//                               <div className="flex-1">
+//                                 <div className="font-medium">
+//                                   {wallet} Wallet
+//                                 </div>
+//                                 <div className="text-xs text-green-600">
+//                                   Ready to connect
+//                                 </div>
+//                               </div>
+//                               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+//                             </div>
+//                           ))}
+//                         </>
+//                       ) : (
+//                         <>
+//                           <div className="px-3 py-2 text-xs text-red-600 bg-red-50">
+//                             ❌ No wallets detected
+//                           </div>
+//                           <div className="px-3 py-2 text-xs text-gray-500">
+//                             Install a compatible wallet:
+//                           </div>
+//                           {["Martian", "Petra", "Fewcha", "Rise"].map(
+//                             (wallet) => (
+//                               <div
+//                                 key={wallet}
+//                                 className="px-3 py-2 text-sm text-gray-500 flex items-center gap-2"
+//                               >
+//                                 <span className="text-lg opacity-50">
+//                                   {getWalletIcon(wallet)}
+//                                 </span>
+//                                 <div className="flex-1">
+//                                   <div>{wallet} Wallet</div>
+//                                   <div className="text-xs">Not installed</div>
+//                                 </div>
+//                                 <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+//                               </div>
+//                             )
+//                           )}
+//                           <div className="px-3 py-2 border-t">
+//                             <button
+//                               onClick={() =>
+//                                 window.open(
+//                                   "https://aptos.dev/integration/wallet-adapter-concept/",
+//                                   "_blank"
+//                                 )
+//                               }
+//                               className="text-xs text-blue-600 hover:text-blue-800"
+//                             >
+//                               View installation guide →
+//                             </button>
+//                           </div>
+//                         </>
+//                       )}
+//                     </div>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           )}
+//         </div>
+
+//         {/* Profile Toggle Button */}
+//         <button
+//           onClick={() => setProfileTab(!profileTab)}
+//           className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors"
+//         >
+//           {profileTab ? "🏠 Home" : "📂 Profile"}
+//         </button>
+//       </div>
+//     </nav>
+//   );
+// }
+
+// export default NavBar;
+
+
+
+
+// import React, { useState, useEffect } from "react";
+// import {
+//   connectWallet,
+//   getAvailableWallets,
+//   disconnectWallet,
+// } from "../utils/connectWallet";
+
+// function NavBar({
+//   walletAddress,
+//   profileTab,
+//   setProfileTab,
+//   setWalletAddress,
+//   setConnectedWallet,
+// }) {
+//   const [connectedWallet, setLocalConnectedWallet] = useState(() => {
+//     const stored = localStorage.getItem("connectedWallet");
+//     return stored ? JSON.parse(stored) : null;
+//   });
+//   const [availableWallets, setAvailableWallets] = useState([]);
+//   const [showWalletDropdown, setShowWalletDropdown] = useState(false);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   useEffect(() => {
+//     const checkWallets = () => {
+//       const wallets = getAvailableWallets();
+//       setAvailableWallets(wallets);
+//     };
+//     checkWallets();
+//     const interval = setInterval(checkWallets, 2000);
+//     return () => clearInterval(interval);
+//   }, []);
+
+//   const handleConnectAuto = async () => {
+//     if (availableWallets.length === 0) {
+//       alert(
+//         "No Aptos wallets detected.\n\nPlease install one of the following:\n🔸 Martian: https://martianwallet.xyz/\n🔹 Petra: https://petra.app/\n🟣 Fewcha: https://fewcha.app/\n🟢 Rise: https://risewallet.io/"
+//       );
+//       return;
+//     }
+
+//     setIsLoading(true);
+//     try {
+//       const wallet = await connectWallet();
+//       setWalletAddress(wallet.address);
+//       setConnectedWallet(wallet);
+//       setLocalConnectedWallet(wallet);
+//       localStorage.setItem("walletAddress", wallet.address);
+//       localStorage.setItem("connectedWallet", JSON.stringify(wallet));
+//       setShowWalletDropdown(false);
+//     } catch (err) {
+//       alert(err.message);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   const handleDisconnect = async () => {
+//     try {
+//       if (connectedWallet) {
+//         await disconnectWallet(connectedWallet.wallet);
+//         setWalletAddress(null);
+//         setConnectedWallet(null);
+//         setLocalConnectedWallet(null);
+//         localStorage.removeItem("walletAddress");
+//         localStorage.removeItem("connectedWallet");
+//       }
+//     } catch (err) {
+//       console.error("Disconnect error:", err);
+//       setWalletAddress(null);
+//       setConnectedWallet(null);
+//       setLocalConnectedWallet(null);
+//       localStorage.removeItem("walletAddress");
+//       localStorage.removeItem("connectedWallet");
+//     }
+//   };
+
+//   const toggleWalletDropdown = () => {
+//     setShowWalletDropdown(!showWalletDropdown);
+//   };
+
+//   const getWalletIcon = (walletName) => {
+//     const icons = {
+//       Martian: "🔸",
+//       Petra: "🔹",
+//       Fewcha: "🟣",
+//       Rise: "🟢",
+//       CLI: "🖥️",
+//     };
+//     return icons[walletName] || "💼";
+//   };
+
+//   return (
+//     <nav className="flex justify-between items-center mb-6 border-b pb-4">
+//       <h1 className="text-3xl font-bold">💳 ELEGENT Card</h1>
+//       <div className="flex gap-2 items-center">
+//         <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg">
+//           <span className="text-xs text-gray-600">Wallets:</span>
+//           {availableWallets.length > 0 ? (
+//             <div className="flex gap-1">
+//               {availableWallets.map((wallet) => (
+//                 <span key={wallet} className="text-xs" title={`${wallet} detected`}>
+//                   {getWalletIcon(wallet)}
+//                 </span>
+//               ))}
+//             </div>
+//           ) : (
+//             <span className="text-xs text-red-500">None detected</span>
+//           )}
+//         </div>
+
+//         <div className="relative">
+//           {walletAddress ? (
+//             <div className="flex items-center gap-2">
+//               <div className="flex items-center gap-2 px-3 py-2 bg-green-100 border border-green-300 rounded-lg">
+//                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+//                 <span className="text-sm font-medium">
+//                   {getWalletIcon(connectedWallet?.wallet)} {connectedWallet?.wallet || "Connected"}
+//                 </span>
+//                 <span className="text-sm text-gray-600">
+//                   {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
+//                 </span>
+//               </div>
+//               <button
+//                 onClick={handleDisconnect}
+//                 className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+//               >
+//                 Disconnect
+//               </button>
+//             </div>
+//           ) : (
+//             <div className="flex items-center gap-2">
+//               <button
+//                 onClick={handleConnectAuto}
+//                 disabled={isLoading}
+//                 className={`px-4 py-2 text-white rounded-lg transition-colors ${
+//                   availableWallets.length > 0
+//                     ? "bg-blue-600 hover:bg-blue-700"
+//                     : "bg-gray-400 cursor-not-allowed"
+//                 } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+//               >
+//                 {isLoading ? "Connecting..." : "Connect Wallet"}
+//               </button>
+//               <div className="relative">
+//                 <button
+//                   onClick={toggleWalletDropdown}
+//                   className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+//                   title="View available wallets"
+//                 >
+//                   ⚙️
+//                 </button>
+//                 {showWalletDropdown && (
+//                   <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+//                     <div className="py-1">
+//                       <div className="px-3 py-2 text-sm font-medium text-gray-500 border-b">
+//                         Wallet Detection Status
+//                       </div>
+//                       {availableWallets.length > 0 ? (
+//                         <>
+//                           <div className="px-3 py-2 text-xs text-green-600 bg-green-50">
+//                             ✅ {availableWallets.length} wallet(s) detected:
+//                           </div>
+//                           {availableWallets.map((wallet) => (
+//                             <div
+//                               key={wallet}
+//                               className="px-3 py-2 text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50"
+//                             >
+//                               <span className="text-lg">{getWalletIcon(wallet)}</span>
+//                               <div className="flex-1">
+//                                 <div className="font-medium">{wallet} Wallet</div>
+//                                 <div className="text-xs text-green-600">Ready to connect</div>
+//                               </div>
+//                               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+//                             </div>
+//                           ))}
+//                         </>
+//                       ) : (
+//                         <>
+//                           <div className="px-3 py-2 text-xs text-red-600 bg-red-50">
+//                             ❌ No wallets detected
+//                           </div>
+//                           <div className="px-3 py-2 text-xs text-gray-500">
+//                             Install a compatible wallet:
+//                           </div>
+//                           {["Martian", "Petra", "Fewcha", "Rise"].map((wallet) => (
+//                             <div
+//                               key={wallet}
+//                               className="px-3 py-2 text-sm text-gray-500 flex items-center gap-2"
+//                             >
+//                               <span className="text-lg opacity-50">{getWalletIcon(wallet)}</span>
+//                               <div className="flex-1">
+//                                 <div>{wallet} Wallet</div>
+//                                 <div className="text-xs">Not installed</div>
+//                               </div>
+//                               <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+//                             </div>
+//                           ))}
+//                           <div className="px-3 py-2 border-t">
+//                             <button
+//                               onClick={() =>
+//                                 window.open(
+//                                   "https://aptos.dev/integration/wallet-adapter-concept/",
+//                                   "_blank"
+//                                 )
+//                               }
+//                               className="text-xs text-blue-600 hover:text-blue-800"
+//                             >
+//                               View installation guide →
+//                             </button>
+//                           </div>
+//                         </>
+//                       )}
+//                     </div>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           )}
+//         </div>
+
+//         <button
+//           onClick={() => setProfileTab(!profileTab)}
+//           className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors"
+//         >
+//           {profileTab ? "🏠 Home" : "📂 Profile"}
+//         </button>
+//       </div>
+//     </nav>
+//   );
+// }
+
+// export default NavBar;
+
+
+
+// import React, { useState, useEffect } from "react";
+// import {
+//   connectWallet,
+//   getAvailableWallets,
+//   disconnectWallet,
+// } from "../utils/connectWallet";
+
+// function NavBar({
+//   walletAddress,
+//   profileTab,
+//   setProfileTab,
+//   setWalletAddress,
+//   setConnectedWallet,
+// }) {
+//   const [connectedWallet, setLocalConnectedWallet] = useState(() => {
+//     const stored = localStorage.getItem("connectedWallet");
+//     return stored ? JSON.parse(stored) : null;
+//   });
+//   const [availableWallets, setAvailableWallets] = useState([]);
+//   const [showWalletDropdown, setShowWalletDropdown] = useState(false);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   useEffect(() => {
+//     const checkWallets = () => {
+//       const wallets = getAvailableWallets();
+//       setAvailableWallets(wallets);
+//     };
+//     checkWallets();
+//     const interval = setInterval(checkWallets, 2000);
+//     return () => clearInterval(interval);
+//   }, []);
+
+//   const handleConnectAuto = async () => {
+//     if (availableWallets.length === 0) {
+//       alert(
+//         "No Aptos wallets detected.\n\nPlease install one of the following:\n🔸 Martian: https://martianwallet.xyz/\n🔹 Petra: https://petra.app/\n🟣 Fewcha: https://fewcha.app/\n🟢 Rise: https://risewallet.io/"
+//       );
+//       return;
+//     }
+
+//     setIsLoading(true);
+//     try {
+//       for (const walletName of availableWallets) {
+//         try {
+//           const wallet = await connectWallet(walletName);
+//           if (wallet) {
+//             setWalletAddress(wallet.address);
+//             setConnectedWallet(wallet);
+//             setLocalConnectedWallet(wallet);
+//             localStorage.setItem("walletAddress", wallet.address);
+//             localStorage.setItem("connectedWallet", JSON.stringify(wallet));
+//             setShowWalletDropdown(false);
+//             break;
+//           }
+//         } catch (err) {
+//           console.warn(`Failed to connect with ${walletName}`, err);
+//         }
+//       }
+//     } catch (err) {
+//       alert(err.message);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   const handleDisconnect = async () => {
+//     try {
+//       if (connectedWallet) {
+//         await disconnectWallet(connectedWallet.wallet);
+//         setWalletAddress(null);
+//         setConnectedWallet(null);
+//         setLocalConnectedWallet(null);
+//         localStorage.removeItem("walletAddress");
+//         localStorage.removeItem("connectedWallet");
+//       }
+//     } catch (err) {
+//       console.error("Disconnect error:", err);
+//       setWalletAddress(null);
+//       setConnectedWallet(null);
+//       setLocalConnectedWallet(null);
+//       localStorage.removeItem("walletAddress");
+//       localStorage.removeItem("connectedWallet");
+//     }
+//   };
+
+//   const toggleWalletDropdown = () => {
+//     setShowWalletDropdown(!showWalletDropdown);
+//   };
+
+//   const getWalletIcon = (walletName) => {
+//     const icons = {
+//       Martian: "🔸",
+//       Petra: "🔹",
+//       Fewcha: "🟣",
+//       Rise: "🟢",
+//       CLI: "🖥️",
+//     };
+//     return icons[walletName] || "💼";
+//   };
+
+//   return (
+//     <nav className="flex justify-between items-center mb-6 border-b pb-4">
+//       <h1 className="text-3xl font-bold">💳 ELEGENT Card</h1>
+//       <div className="flex gap-2 items-center">
+//         <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg">
+//           <span className="text-xs text-gray-600">Wallets:</span>
+//           {availableWallets.length > 0 ? (
+//             <div className="flex gap-1">
+//               {availableWallets.map((wallet) => (
+//                 <span key={wallet} className="text-xs" title={`${wallet} detected`}>
+//                   {getWalletIcon(wallet)}
+//                 </span>
+//               ))}
+//             </div>
+//           ) : (
+//             <span className="text-xs text-red-500">None detected</span>
+//           )}
+//         </div>
+
+//         <div className="relative">
+//           {walletAddress ? (
+//             <div className="flex items-center gap-2">
+//               <div className="flex items-center gap-2 px-3 py-2 bg-green-100 border border-green-300 rounded-lg">
+//                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+//                 <span className="text-sm font-medium">
+//                   {getWalletIcon(connectedWallet?.wallet)} {connectedWallet?.wallet || "Connected"}
+//                 </span>
+//                 <span className="text-sm text-gray-600">
+//                   {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
+//                 </span>
+//               </div>
+//               <button
+//                 onClick={handleDisconnect}
+//                 className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+//               >
+//                 Disconnect
+//               </button>
+//             </div>
+//           ) : (
+//             <div className="flex items-center gap-2">
+//               <button
+//                 onClick={handleConnectAuto}
+//                 disabled={isLoading}
+//                 className={`px-4 py-2 text-white rounded-lg transition-colors ${
+//                   availableWallets.length > 0
+//                     ? "bg-blue-600 hover:bg-blue-700"
+//                     : "bg-gray-400 cursor-not-allowed"
+//                 } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+//               >
+//                 {isLoading ? "Connecting..." : "Connect Wallet"}
+//               </button>
+//               <div className="relative">
+//                 <button
+//                   onClick={toggleWalletDropdown}
+//                   className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+//                   title="View available wallets"
+//                 >
+//                   ⚙️
+//                 </button>
+//                 {showWalletDropdown && (
+//                   <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+//                     <div className="py-1">
+//                       <div className="px-3 py-2 text-sm font-medium text-gray-500 border-b">
+//                         Wallet Detection Status
+//                       </div>
+//                       {availableWallets.length > 0 ? (
+//                         <>
+//                           <div className="px-3 py-2 text-xs text-green-600 bg-green-50">
+//                             ✅ {availableWallets.length} wallet(s) detected:
+//                           </div>
+//                           {availableWallets.map((wallet) => (
+//                             <div
+//                               key={wallet}
+//                               className="px-3 py-2 text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50"
+//                             >
+//                               <span className="text-lg">{getWalletIcon(wallet)}</span>
+//                               <div className="flex-1">
+//                                 <div className="font-medium">{wallet} Wallet</div>
+//                                 <div className="text-xs text-green-600">Ready to connect</div>
+//                               </div>
+//                               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+//                             </div>
+//                           ))}
+//                         </>
+//                       ) : (
+//                         <>
+//                           <div className="px-3 py-2 text-xs text-red-600 bg-red-50">
+//                             ❌ No wallets detected
+//                           </div>
+//                           <div className="px-3 py-2 text-xs text-gray-500">
+//                             Install a compatible wallet:
+//                           </div>
+//                           {["Martian", "Petra", "Fewcha", "Rise"].map((wallet) => (
+//                             <div
+//                               key={wallet}
+//                               className="px-3 py-2 text-sm text-gray-500 flex items-center gap-2"
+//                             >
+//                               <span className="text-lg opacity-50">{getWalletIcon(wallet)}</span>
+//                               <div className="flex-1">
+//                                 <div>{wallet} Wallet</div>
+//                                 <div className="text-xs">Not installed</div>
+//                               </div>
+//                               <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+//                             </div>
+//                           ))}
+//                           <div className="px-3 py-2 border-t">
+//                             <button
+//                               onClick={() =>
+//                                 window.open(
+//                                   "https://aptos.dev/integration/wallet-adapter-concept/",
+//                                   "_blank"
+//                                 )
+//                               }
+//                               className="text-xs text-blue-600 hover:text-blue-800"
+//                             >
+//                               View installation guide →
+//                             </button>
+//                           </div>
+//                         </>
+//                       )}
+//                     </div>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           )}
+//         </div>
+
+//         <button
+//           onClick={() => setProfileTab(!profileTab)}
+//           className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors"
+//         >
+//           {profileTab ? "🏠 Home" : "📂 Profile"}
+//         </button>
+//       </div>
+//     </nav>
+//   );
+// }
+
+// export default NavBar;
+
+
+
+
+
+
+
+
+
+// import React, { useState, useEffect } from "react";
+// import {
+//   connectWallet,
+//   getAvailableWallets,
+//   disconnectWallet,
+// } from "../utils/connectWallet";
+
+// function NavBar({
+//   walletAddress,
+//   profileTab,
+//   setProfileTab,
+//   setWalletAddress,
+//   setConnectedWallet,
+// }) {
+//   const [connectedWallet, setLocalConnectedWallet] = useState(() => {
+//     const stored = localStorage.getItem("connectedWallet");
+//     return stored ? JSON.parse(stored) : null;
+//   });
+//   const [availableWallets, setAvailableWallets] = useState([]);
+//   const [showWalletDropdown, setShowWalletDropdown] = useState(false);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   useEffect(() => {
+//     const checkWallets = () => {
+//       const wallets = getAvailableWallets();
+//       setAvailableWallets(wallets);
+//     };
+//     checkWallets();
+//     const interval = setInterval(checkWallets, 2000);
+//     return () => clearInterval(interval);
+//   }, []);
+
+//   const handleConnectAuto = async () => {
+//     if (availableWallets.length === 0) {
+//       alert(
+//         "No Aptos wallets detected.\n\nPlease install one of the following:\n🔸 Martian: https://martianwallet.xyz/\n🔹 Petra: https://petra.app/\n🟣 Fewcha: https://fewcha.app/\n🟢 Rise: https://risewallet.io/"
+//       );
+//       return;
+//     }
+
+//     setIsLoading(true);
+//     try {
+//       let wallet = null;
+//       for (const walletName of availableWallets) {
+//         try {
+//           wallet = await connectWallet(walletName);
+//           break;
+//         } catch (err) {
+//           console.warn(`❌ Failed to connect to ${walletName}:`, err.message);
+//         }
+//       }
+//       if (!wallet) throw new Error("All detected wallets failed to connect.");
+//       setWalletAddress(wallet.address);
+//       setConnectedWallet(wallet);
+//       setLocalConnectedWallet(wallet);
+//       localStorage.setItem("walletAddress", wallet.address);
+//       localStorage.setItem("connectedWallet", JSON.stringify(wallet));
+//       setShowWalletDropdown(false);
+//     } catch (err) {
+//       alert(err.message);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   const handleDisconnect = async () => {
+//     try {
+//       if (connectedWallet) {
+//         await disconnectWallet(connectedWallet.wallet);
+//         setWalletAddress(null);
+//         setConnectedWallet(null);
+//         setLocalConnectedWallet(null);
+//         localStorage.removeItem("walletAddress");
+//         localStorage.removeItem("connectedWallet");
+//       }
+//     } catch (err) {
+//       console.error("Disconnect error:", err);
+//       setWalletAddress(null);
+//       setConnectedWallet(null);
+//       setLocalConnectedWallet(null);
+//       localStorage.removeItem("walletAddress");
+//       localStorage.removeItem("connectedWallet");
+//     }
+//   };
+
+//   const toggleWalletDropdown = () => {
+//     setShowWalletDropdown(!showWalletDropdown);
+//   };
+
+//   const getWalletIcon = (walletName) => {
+//     const icons = {
+//       Martian: "🔸",
+//       Petra: "🔹",
+//       Fewcha: "🟣",
+//       Rise: "🟢",
+//       CLI: "🖥️",
+//     };
+//     return icons[walletName] || "💼";
+//   };
+
+//   return (
+//     <nav className="flex justify-between items-center mb-6 border-b pb-4">
+//       <h1 className="text-3xl font-bold">💳 ELEGENT Card</h1>
+//       <div className="flex gap-2 items-center">
+//         <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg">
+//           <span className="text-xs text-gray-600">Wallets:</span>
+//           {availableWallets.length > 0 ? (
+//             <div className="flex gap-1">
+//               {availableWallets.map((wallet) => (
+//                 <span key={wallet} className="text-xs" title={`${wallet} detected`}>
+//                   {getWalletIcon(wallet)}
+//                 </span>
+//               ))}
+//             </div>
+//           ) : (
+//             <span className="text-xs text-red-500">None detected</span>
+//           )}
+//         </div>
+
+//         <div className="relative">
+//           {walletAddress ? (
+//             <div className="flex items-center gap-2">
+//               <div className="flex items-center gap-2 px-3 py-2 bg-green-100 border border-green-300 rounded-lg">
+//                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+//                 <span className="text-sm font-medium">
+//                   {getWalletIcon(connectedWallet?.wallet)} {connectedWallet?.wallet || "Connected"}
+//                 </span>
+//                 <span className="text-sm text-gray-600">
+//                   {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
+//                 </span>
+//               </div>
+//               <button
+//                 onClick={handleDisconnect}
+//                 className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+//               >
+//                 Disconnect
+//               </button>
+//             </div>
+//           ) : (
+//             <div className="flex items-center gap-2">
+//               <button
+//                 onClick={handleConnectAuto}
+//                 disabled={isLoading}
+//                 className={`px-4 py-2 text-white rounded-lg transition-colors ${
+//                   availableWallets.length > 0
+//                     ? "bg-blue-600 hover:bg-blue-700"
+//                     : "bg-gray-400 cursor-not-allowed"
+//                 } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+//               >
+//                 {isLoading ? "Connecting..." : "Connect Wallet"}
+//               </button>
+//               <div className="relative">
+//                 <button
+//                   onClick={toggleWalletDropdown}
+//                   className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+//                   title="View available wallets"
+//                 >
+//                   ⚙️
+//                 </button>
+//                 {/* Dropdown remains unchanged */}
+//               </div>
+//             </div>
+//           )}
+//         </div>
+
+//         <button
+//           onClick={() => setProfileTab(!profileTab)}
+//           className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors"
+//         >
+//           {profileTab ? "🏠 Home" : "📂 Profile"}
+//         </button>
+//       </div>
+//     </nav>
+//   );
+// }
+
+// export default NavBar;
+
+
+
+
+
+
 import React, { useState, useEffect } from "react";
 import {
   connectWallet,
@@ -227,29 +1152,26 @@ function NavBar({
   profileTab,
   setProfileTab,
   setWalletAddress,
+  setConnectedWallet,
 }) {
-  const [connectedWallet, setConnectedWallet] = useState(null);
+  const [connectedWallet, setLocalConnectedWallet] = useState(() => {
+    const stored = localStorage.getItem("connectedWallet");
+    return stored ? JSON.parse(stored) : null;
+  });
   const [availableWallets, setAvailableWallets] = useState([]);
   const [showWalletDropdown, setShowWalletDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Check available wallets on component mount
   useEffect(() => {
     const checkWallets = () => {
       const wallets = getAvailableWallets();
       setAvailableWallets(wallets);
-      console.log("Available wallets detected:", wallets);
     };
-
     checkWallets();
-
-    // Re-check wallets every 2 seconds in case user installs a wallet
     const interval = setInterval(checkWallets, 2000);
-
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-connect to any available wallet
   const handleConnectAuto = async () => {
     if (availableWallets.length === 0) {
       alert(
@@ -260,10 +1182,20 @@ function NavBar({
 
     setIsLoading(true);
     try {
-      const wallet = await connectWallet();
-      setWalletAddress(wallet.address);
-      setConnectedWallet(wallet);
-      setShowWalletDropdown(false);
+      for (const walletName of availableWallets) {
+        try {
+          const wallet = await connectWallet(walletName);
+          setWalletAddress(wallet.address);
+          setConnectedWallet(wallet);
+          setLocalConnectedWallet(wallet);
+          localStorage.setItem("walletAddress", wallet.address);
+          localStorage.setItem("connectedWallet", JSON.stringify(wallet));
+          setShowWalletDropdown(false);
+          break;
+        } catch (e) {
+          console.warn(`Failed to connect ${walletName}:`, e);
+        }
+      }
     } catch (err) {
       alert(err.message);
     } finally {
@@ -271,34 +1203,37 @@ function NavBar({
     }
   };
 
-  // Disconnect wallet
   const handleDisconnect = async () => {
     try {
       if (connectedWallet) {
         await disconnectWallet(connectedWallet.wallet);
         setWalletAddress(null);
         setConnectedWallet(null);
+        setLocalConnectedWallet(null);
+        localStorage.removeItem("walletAddress");
+        localStorage.removeItem("connectedWallet");
       }
     } catch (err) {
       console.error("Disconnect error:", err);
-      // Force disconnect even if API call fails
       setWalletAddress(null);
       setConnectedWallet(null);
+      setLocalConnectedWallet(null);
+      localStorage.removeItem("walletAddress");
+      localStorage.removeItem("connectedWallet");
     }
   };
 
-  // Toggle wallet dropdown
   const toggleWalletDropdown = () => {
     setShowWalletDropdown(!showWalletDropdown);
   };
 
-  // Get wallet icon
   const getWalletIcon = (walletName) => {
     const icons = {
       Martian: "🔸",
       Petra: "🔹",
       Fewcha: "🟣",
       Rise: "🟢",
+      CLI: "🖥️",
     };
     return icons[walletName] || "💼";
   };
@@ -306,19 +1241,13 @@ function NavBar({
   return (
     <nav className="flex justify-between items-center mb-6 border-b pb-4">
       <h1 className="text-3xl font-bold">💳 ELEGENT Card</h1>
-
       <div className="flex gap-2 items-center">
-        {/* Wallet Detection Status */}
         <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-lg">
           <span className="text-xs text-gray-600">Wallets:</span>
           {availableWallets.length > 0 ? (
             <div className="flex gap-1">
               {availableWallets.map((wallet) => (
-                <span
-                  key={wallet}
-                  className="text-xs"
-                  title={`${wallet} detected`}
-                >
+                <span key={wallet} className="text-xs" title={`${wallet} detected`}>
                   {getWalletIcon(wallet)}
                 </span>
               ))}
@@ -328,23 +1257,18 @@ function NavBar({
           )}
         </div>
 
-        {/* Wallet Connection Section */}
         <div className="relative">
           {walletAddress ? (
             <div className="flex items-center gap-2">
-              {/* Connected Wallet Display */}
               <div className="flex items-center gap-2 px-3 py-2 bg-green-100 border border-green-300 rounded-lg">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="text-sm font-medium">
-                  {getWalletIcon(connectedWallet?.wallet)}{" "}
-                  {connectedWallet?.wallet || "Connected"}
+                  {getWalletIcon(connectedWallet?.wallet)} {connectedWallet?.wallet || "Connected"}
                 </span>
                 <span className="text-sm text-gray-600">
                   {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
                 </span>
               </div>
-
-              {/* Disconnect Button */}
               <button
                 onClick={handleDisconnect}
                 className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
@@ -354,7 +1278,6 @@ function NavBar({
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              {/* Auto Connect Button */}
               <button
                 onClick={handleConnectAuto}
                 disabled={isLoading}
@@ -366,8 +1289,6 @@ function NavBar({
               >
                 {isLoading ? "Connecting..." : "Connect Wallet"}
               </button>
-
-              {/* Wallet Selection Dropdown */}
               <div className="relative">
                 <button
                   onClick={toggleWalletDropdown}
@@ -376,88 +1297,11 @@ function NavBar({
                 >
                   ⚙️
                 </button>
-
-                {showWalletDropdown && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                    <div className="py-1">
-                      <div className="px-3 py-2 text-sm font-medium text-gray-500 border-b">
-                        Wallet Detection Status
-                      </div>
-
-                      {availableWallets.length > 0 ? (
-                        <>
-                          <div className="px-3 py-2 text-xs text-green-600 bg-green-50">
-                            ✅ {availableWallets.length} wallet(s) detected:
-                          </div>
-                          {availableWallets.map((wallet) => (
-                            <div
-                              key={wallet}
-                              className="px-3 py-2 text-sm text-gray-700 flex items-center gap-2 hover:bg-gray-50"
-                            >
-                              <span className="text-lg">
-                                {getWalletIcon(wallet)}
-                              </span>
-                              <div className="flex-1">
-                                <div className="font-medium">
-                                  {wallet} Wallet
-                                </div>
-                                <div className="text-xs text-green-600">
-                                  Ready to connect
-                                </div>
-                              </div>
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            </div>
-                          ))}
-                        </>
-                      ) : (
-                        <>
-                          <div className="px-3 py-2 text-xs text-red-600 bg-red-50">
-                            ❌ No wallets detected
-                          </div>
-                          <div className="px-3 py-2 text-xs text-gray-500">
-                            Install a compatible wallet:
-                          </div>
-                          {["Martian", "Petra", "Fewcha", "Rise"].map(
-                            (wallet) => (
-                              <div
-                                key={wallet}
-                                className="px-3 py-2 text-sm text-gray-500 flex items-center gap-2"
-                              >
-                                <span className="text-lg opacity-50">
-                                  {getWalletIcon(wallet)}
-                                </span>
-                                <div className="flex-1">
-                                  <div>{wallet} Wallet</div>
-                                  <div className="text-xs">Not installed</div>
-                                </div>
-                                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                              </div>
-                            )
-                          )}
-                          <div className="px-3 py-2 border-t">
-                            <button
-                              onClick={() =>
-                                window.open(
-                                  "https://aptos.dev/integration/wallet-adapter-concept/",
-                                  "_blank"
-                                )
-                              }
-                              className="text-xs text-blue-600 hover:text-blue-800"
-                            >
-                              View installation guide →
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
         </div>
 
-        {/* Profile Toggle Button */}
         <button
           onClick={() => setProfileTab(!profileTab)}
           className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors"

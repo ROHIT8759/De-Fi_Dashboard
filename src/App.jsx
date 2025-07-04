@@ -3471,6 +3471,619 @@
 
 
 
+// import React, { useEffect, useState } from 'react';
+// import axios from 'axios';
+// import './index.css';
+// import { AptosClient } from 'aptos';
+// import { connectWallet, getAvailableWallets } from './utils/connectWallet';
+// import aptosClient from './utils/aptosClient';
+// import NavBar from './components/NavBar';
+// import ProfileDashboard from './components/ProfileDashboard';
+// import CoinCard from './components/CoinCard';
+// import Filters from './components/Filters';
+// import BuySellModal from './components/BuySellModal';
+// import AssetTable from './components/AssetTable';
+// import SummaryHeader from './components/SummaryHeader';
+
+// const aptos = new AptosClient('https://fullnode.mainnet.aptoslabs.com');
+
+// const COIN_LIST = 'bitcoin,ethereum,uniswap,aave,curve-dao-token,chainlink,litecoin,maker,compound-governance-token,the-graph,optimism,arbitrum,avalanche-2,solana,toncoin';
+
+// function App() {
+//   // State management
+//   const [coins, setCoins] = useState([]);
+//   const [filteredCoins, setFilteredCoins] = useState([]);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [sortBy, setSortBy] = useState('rank');
+//   const [chartRange, setChartRange] = useState('7d');
+//   const [walletAddress, setWalletAddress] = useState(null);
+//   const [aptosBalance, setAptosBalance] = useState(null);
+//   const [connectedWallet, setConnectedWallet] = useState(null);
+//   const [profileTab, setProfileTab] = useState(false);
+//   const [selectedCoin, setSelectedCoin] = useState(null);
+//   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+//   const [tradeType, setTradeType] = useState('buy');
+//   const [viewMode, setViewMode] = useState('cards');
+//   const [loading, setLoading] = useState(false);
+
+//   // Fetch balance when wallet address changes
+//   useEffect(() => {
+//     const fetchBalance = async () => {
+//       if (walletAddress) {
+//         try {
+//           setLoading(true);
+//           const balance = await aptosClient.getAptosBalance(walletAddress);
+//           setAptosBalance(balance);
+//         } catch (error) {
+//           console.error('Failed to fetch balance:', error);
+//           setAptosBalance(0);
+//         } finally {
+//           setLoading(false);
+//         }
+//       } else {
+//         setAptosBalance(null);
+//       }
+//     };
+
+//     fetchBalance();
+//   }, [walletAddress]);
+
+//   // Legacy wallet connection handler (for compatibility)
+//   const handleConnectWallet = async () => {
+//     try {
+//       setLoading(true);
+//       const availableWallets = getAvailableWallets();
+      
+//       if (availableWallets.length === 0) {
+//         alert(
+//           "No Aptos wallets detected.\n\nPlease install one of the following:\n🔸 Martian: https://martianwallet.xyz/\n🔹 Petra: https://petra.app/\n🟣 Fewcha: https://fewcha.app/\n🟢 Rise: https://risewallet.io/"
+//         );
+//         return;
+//       }
+
+//       const wallet = await connectWallet();
+//       setWalletAddress(wallet.address);
+//       setConnectedWallet(wallet);
+//     } catch (error) {
+//       console.error('Error connecting wallet:', error);
+//       alert(error.message);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Fetch coin data from API
+//   useEffect(() => {
+//     const fetchCoinData = async () => {
+//       try {
+//         const response = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+//           params: {
+//             vs_currency: 'usd',
+//             ids: COIN_LIST,
+//             order: 'market_cap_desc',
+//             sparkline: true,
+//             price_change_percentage: '1h,24h,7d',
+//           },
+//         });
+        
+//         setCoins(response.data);
+//         setFilteredCoins(response.data);
+//       } catch (error) {
+//         console.error('Error fetching coin data:', error);
+//       }
+//     };
+
+//     fetchCoinData();
+//   }, []);
+
+//   // Filter and sort coins
+//   useEffect(() => {
+//     let filteredData = [...coins];
+
+//     // Apply search filter
+//     if (searchTerm) {
+//       filteredData = filteredData.filter((coin) =>
+//         coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+//       );
+//     }
+
+//     // Apply sorting
+//     if (sortBy === 'volume') {
+//       filteredData.sort((a, b) => b.total_volume - a.total_volume);
+//     } else {
+//       filteredData.sort((a, b) => a.market_cap_rank - b.market_cap_rank);
+//     }
+
+//     setFilteredCoins(filteredData);
+//   }, [searchTerm, sortBy, coins]);
+
+//   // Trade handler
+//   const handleTrade = (coin, isBuy) => {
+//     if (!walletAddress) {
+//       alert('Please connect your wallet first');
+//       return;
+//     }
+//     setSelectedCoin(coin);
+//     setTradeType(isBuy ? 'buy' : 'sell');
+//     setIsBuyModalOpen(true);
+//   };
+
+//   // Close modal handler
+//   const handleCloseModal = () => {
+//     setIsBuyModalOpen(false);
+//     setSelectedCoin(null);
+//   };
+
+//   // Toggle view mode
+//   const toggleViewMode = () => {
+//     setViewMode(viewMode === 'cards' ? 'table' : 'cards');
+//   };
+
+//   // Calculate market statistics
+//   const marketSize = filteredCoins.reduce((sum, coin) => sum + (coin.market_cap || 0), 0);
+//   const totalBorrowed = filteredCoins.reduce((sum, coin) => sum + (coin.total_volume || 0), 0);
+//   const lentOut = marketSize > 0 ? ((totalBorrowed / marketSize) * 100).toFixed(2) : 0;
+
+//   return (
+//     <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
+//       <div className="container mx-auto px-4 py-8">
+//         <NavBar
+//           walletAddress={walletAddress}
+//           onConnect={handleConnectWallet}
+//           profileTab={profileTab}
+//           setProfileTab={setProfileTab}
+//           setWalletAddress={setWalletAddress}
+//           setConnectedWallet={setConnectedWallet}
+//         />
+
+//         {loading && (
+//           <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+//             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg">
+//               <div className="flex items-center space-x-3">
+//                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+//                 <span>Loading...</span>
+//               </div>
+//             </div>
+//           </div>
+//         )}
+
+//         {profileTab ? (
+//           <ProfileDashboard 
+//             walletAddress={walletAddress} 
+//             aptosBalance={aptosBalance}
+//             connectedWallet={connectedWallet}
+//           />
+//         ) : (
+//           <>
+//             {/* Welcome Section for Non-Connected Users */}
+//             {!walletAddress && (
+//               <div className="text-center py-12 mb-8">
+//                 <h1 className="text-4xl font-bold mb-4">Welcome to ELEGENT Card</h1>
+//                 <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+//                   Your gateway to decentralized finance and crypto trading
+//                 </p>
+//                 <div className="bg-gray-100 dark:bg-gray-800 p-8 rounded-xl mb-8">
+//                   <h2 className="text-2xl font-bold mb-6">🎯 Platform Features</h2>
+//                   <div className="grid md:grid-cols-4 gap-6">
+//                     <div className="p-4 bg-white dark:bg-gray-700 rounded-lg">
+//                       <h3 className="font-bold text-lg mb-2">💰 DeFi Loans</h3>
+//                       <p className="text-sm">Borrow and lend assets with competitive rates</p>
+//                     </div>
+//                     <div className="p-4 bg-white dark:bg-gray-700 rounded-lg">
+//                       <h3 className="font-bold text-lg mb-2">🏆 TrustScore</h3>
+//                       <p className="text-sm">Build credit history on-chain with NFT certificates</p>
+//                     </div>
+//                     <div className="p-4 bg-white dark:bg-gray-700 rounded-lg">
+//                       <h3 className="font-bold text-lg mb-2">🏦 Staking</h3>
+//                       <p className="text-sm">Stake APT tokens for yield farming rewards</p>
+//                     </div>
+//                     <div className="p-4 bg-white dark:bg-gray-700 rounded-lg">
+//                       <h3 className="font-bold text-lg mb-2">📈 Trading</h3>
+//                       <p className="text-sm">Trade popular cryptocurrencies with real-time data</p>
+//                     </div>
+//                   </div>
+//                 </div>
+//                 <button
+//                   onClick={handleConnectWallet}
+//                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors"
+//                 >
+//                   Connect Wallet to Get Started
+//                 </button>
+//               </div>
+//             )}
+
+//             <SummaryHeader
+//               marketSize={marketSize || 0}
+//               totalBorrowed={totalBorrowed || 0}
+//               lentOut={lentOut || 0}
+//             />
+
+//             <div className="flex justify-between items-center mb-4">
+//               <div className="flex items-center space-x-4">
+//                 {walletAddress && (
+//                   <div className="bg-green-100 dark:bg-green-900 px-4 py-2 rounded-lg">
+//                     <span className="text-sm font-medium">
+//                       💼 Balance: {aptosBalance ? aptosBalance.toFixed(4) : '0.0000'} APT
+//                     </span>
+//                   </div>
+//                 )}
+//               </div>
+//               <button
+//                 onClick={toggleViewMode}
+//                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition-colors"
+//               >
+//                 {viewMode === 'cards' ? '📊 Table View' : '🎴 Card View'}
+//               </button>
+//             </div>
+
+//             <Filters
+//               searchTerm={searchTerm}
+//               setSearchTerm={setSearchTerm}
+//               sortBy={sortBy}
+//               setSortBy={setSortBy}
+//               chartRange={chartRange}
+//               setChartRange={setChartRange}
+//             />
+
+//             {filteredCoins.length > 0 ? (
+//               viewMode === 'cards' ? (
+//                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+//                   {filteredCoins.map((coin) => (
+//                     <CoinCard
+//                       key={coin.id}
+//                       coin={coin}
+//                       chartRange={chartRange}
+//                       onTrade={handleTrade}
+//                       walletConnected={!!walletAddress}
+//                     />
+//                   ))}
+//                 </div>
+//               ) : (
+//                 <AssetTable 
+//                   assets={filteredCoins} 
+//                   onTrade={handleTrade}
+//                   walletConnected={!!walletAddress}
+//                 />
+//               )
+//             ) : (
+//               <div className="text-center py-12">
+//                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+//                 <p className="text-gray-500">Loading market data...</p>
+//               </div>
+//             )}
+//           </>
+//         )}
+
+//         {isBuyModalOpen && selectedCoin && (
+//           <BuySellModal
+//             coin={selectedCoin}
+//             tradeType={tradeType}
+//             onClose={handleCloseModal}
+//             walletAddress={walletAddress}
+//             aptosClient={aptos}
+//             connectedWallet={connectedWallet}
+//           />
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default App;
+
+
+
+
+// import React, { useEffect, useState } from 'react';
+// import axios from 'axios';
+// import './index.css';
+// import { AptosClient } from 'aptos';
+// import { connectWallet, getAvailableWallets } from './utils/connectWallet';
+// import aptosClient from './utils/aptosClient';
+// import NavBar from './components/NavBar';
+// import ProfileDashboard from './components/ProfileDashboard';
+// import CoinCard from './components/CoinCard';
+// import Filters from './components/Filters';
+// import BuySellModal from './components/BuySellModal';
+// import AssetTable from './components/AssetTable';
+// import SummaryHeader from './components/SummaryHeader';
+
+// const aptos = new AptosClient('https://fullnode.mainnet.aptoslabs.com');
+// const COIN_LIST = 'bitcoin,ethereum,uniswap,aave,curve-dao-token,chainlink,litecoin,maker,compound-governance-token,the-graph,optimism,arbitrum,avalanche-2,solana,toncoin';
+
+// function App() {
+//   const [coins, setCoins] = useState([]);
+//   const [filteredCoins, setFilteredCoins] = useState([]);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [sortBy, setSortBy] = useState('rank');
+//   const [chartRange, setChartRange] = useState('7d');
+//   const [walletAddress, setWalletAddress] = useState(null);
+//   const [aptosBalance, setAptosBalance] = useState(null);
+//   const [connectedWallet, setConnectedWallet] = useState(null);
+//   const [profileTab, setProfileTab] = useState(false);
+//   const [selectedCoin, setSelectedCoin] = useState(null);
+//   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
+//   const [tradeType, setTradeType] = useState('buy');
+//   const [viewMode, setViewMode] = useState('cards');
+//   const [loading, setLoading] = useState(false);
+
+//   // 🚀 Preload CLI wallet address for dev/demo
+//   useEffect(() => {
+//     const CLI_WALLET = 'cc5e97e0015543dfac2d3e686fed214a7450e5c1efe15786dfde118987c3fbec';
+//     const mockWallet = {
+//       address: CLI_WALLET,
+//       provider: {
+//         signAndSubmitTransaction: async (payload) => {
+//           alert('🧪 Simulated TX (CLI wallet):\n' + JSON.stringify(payload, null, 2));
+//           return { hash: 'simulated_tx_hash' };
+//         },
+//       },
+//     };
+
+//     if (!walletAddress && !connectedWallet) {
+//       setWalletAddress(CLI_WALLET);
+//       setConnectedWallet(mockWallet);
+//     }
+//   }, []);
+
+//   // Fetch Aptos balance
+//   useEffect(() => {
+//     const fetchBalance = async () => {
+//       if (walletAddress) {
+//         try {
+//           setLoading(true);
+//           const balance = await aptosClient.getAptosBalance(walletAddress);
+//           setAptosBalance(balance);
+//         } catch (error) {
+//           console.error('Balance fetch failed:', error);
+//           setAptosBalance(0);
+//         } finally {
+//           setLoading(false);
+//         }
+//       }
+//     };
+
+//     fetchBalance();
+//   }, [walletAddress]);
+
+//   // Legacy connect wallet handler
+//   const handleConnectWallet = async () => {
+//     try {
+//       setLoading(true);
+//       const availableWallets = getAvailableWallets();
+
+//       if (availableWallets.length === 0) {
+//         alert("No Aptos wallets found.\n\nInstall:\n🔸 Martian\n🔹 Petra\n🟣 Fewcha\n🟢 Rise");
+//         return;
+//       }
+
+//       const wallet = await connectWallet();
+//       setWalletAddress(wallet.address);
+//       setConnectedWallet(wallet);
+//     } catch (error) {
+//       console.error('Wallet connect error:', error);
+//       alert(error.message);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Fetch coin market data
+//   useEffect(() => {
+//     const fetchCoinData = async () => {
+//       try {
+//         const res = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+//           params: {
+//             vs_currency: 'usd',
+//             ids: COIN_LIST,
+//             order: 'market_cap_desc',
+//             sparkline: true,
+//             price_change_percentage: '1h,24h,7d',
+//           },
+//         });
+//         setCoins(res.data);
+//         setFilteredCoins(res.data);
+//       } catch (err) {
+//         console.error('Coin data fetch failed:', err);
+//       }
+//     };
+
+//     fetchCoinData();
+//   }, []);
+
+//   // Filter/sort coins
+//   useEffect(() => {
+//     let filtered = [...coins];
+
+//     if (searchTerm) {
+//       filtered = filtered.filter(
+//         (c) =>
+//           c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//           c.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+//       );
+//     }
+
+//     filtered.sort((a, b) =>
+//       sortBy === 'volume'
+//         ? b.total_volume - a.total_volume
+//         : a.market_cap_rank - b.market_cap_rank
+//     );
+
+//     setFilteredCoins(filtered);
+//   }, [searchTerm, sortBy, coins]);
+
+//   const handleTrade = (coin, isBuy) => {
+//     if (!walletAddress) return alert('Connect wallet first');
+//     setSelectedCoin(coin);
+//     setTradeType(isBuy ? 'buy' : 'sell');
+//     setIsBuyModalOpen(true);
+//   };
+
+//   const handleCloseModal = () => {
+//     setIsBuyModalOpen(false);
+//     setSelectedCoin(null);
+//   };
+
+//   const toggleViewMode = () => {
+//     setViewMode(viewMode === 'cards' ? 'table' : 'cards');
+//   };
+
+//   const marketSize = filteredCoins.reduce((sum, coin) => sum + (coin.market_cap || 0), 0);
+//   const totalBorrowed = filteredCoins.reduce((sum, coin) => sum + (coin.total_volume || 0), 0);
+//   const lentOut = marketSize ? ((totalBorrowed / marketSize) * 100).toFixed(2) : 0;
+
+//   return (
+//     <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
+//       <div className="container mx-auto px-4 py-8">
+//         <NavBar
+//           walletAddress={walletAddress}
+//           onConnect={handleConnectWallet}
+//           profileTab={profileTab}
+//           setProfileTab={setProfileTab}
+//           setWalletAddress={setWalletAddress}
+//           setConnectedWallet={setConnectedWallet}
+//         />
+
+//         {loading && (
+//           <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
+//             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg">
+//               <div className="flex items-center space-x-3">
+//                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+//                 <span>Loading...</span>
+//               </div>
+//             </div>
+//           </div>
+//         )}
+
+//         {profileTab ? (
+//           <ProfileDashboard
+//             walletAddress={walletAddress}
+//             aptosBalance={aptosBalance}
+//             connectedWallet={connectedWallet}
+//           />
+//         ) : (
+//           <>
+//             {!walletAddress && (
+//               <div className="text-center py-12 mb-8">
+//                 <h1 className="text-4xl font-bold mb-4">Welcome to ELEGENT Card</h1>
+//                 <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+//                   Your gateway to decentralized finance and crypto trading
+//                 </p>
+//                 <div className="bg-gray-100 dark:bg-gray-800 p-8 rounded-xl mb-8">
+//                   <h2 className="text-2xl font-bold mb-6">🎯 Platform Features</h2>
+//                   <div className="grid md:grid-cols-4 gap-6">
+//                     <div className="p-4 bg-white dark:bg-gray-700 rounded-lg">
+//                       <h3 className="font-bold text-lg mb-2">💰 DeFi Loans</h3>
+//                       <p className="text-sm">Borrow and lend assets with competitive rates</p>
+//                     </div>
+//                     <div className="p-4 bg-white dark:bg-gray-700 rounded-lg">
+//                       <h3 className="font-bold text-lg mb-2">🏆 TrustScore</h3>
+//                       <p className="text-sm">Build credit history on-chain with NFT certificates</p>
+//                     </div>
+//                     <div className="p-4 bg-white dark:bg-gray-700 rounded-lg">
+//                       <h3 className="font-bold text-lg mb-2">🏦 Staking</h3>
+//                       <p className="text-sm">Stake APT tokens for yield farming rewards</p>
+//                     </div>
+//                     <div className="p-4 bg-white dark:bg-gray-700 rounded-lg">
+//                       <h3 className="font-bold text-lg mb-2">📈 Trading</h3>
+//                       <p className="text-sm">Trade popular cryptocurrencies with real-time data</p>
+//                     </div>
+//                   </div>
+//                 </div>
+//                 <button
+//                   onClick={handleConnectWallet}
+//                   className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors"
+//                 >
+//                   Connect Wallet to Get Started
+//                 </button>
+//               </div>
+//             )}
+
+//             <SummaryHeader
+//               marketSize={marketSize || 0}
+//               totalBorrowed={totalBorrowed || 0}
+//               lentOut={lentOut || 0}
+//             />
+
+//             <div className="flex justify-between items-center mb-4">
+//               <div className="flex items-center space-x-4">
+//                 {walletAddress && (
+//                   <div className="bg-green-100 dark:bg-green-900 px-4 py-2 rounded-lg">
+//                     <span className="text-sm font-medium">
+//                       💼 Balance: {aptosBalance ? aptosBalance.toFixed(4) : '0.0000'} APT
+//                     </span>
+//                   </div>
+//                 )}
+//               </div>
+//               <button
+//                 onClick={toggleViewMode}
+//                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition-colors"
+//               >
+//                 {viewMode === 'cards' ? '📊 Table View' : '🎴 Card View'}
+//               </button>
+//             </div>
+
+//             <Filters
+//               searchTerm={searchTerm}
+//               setSearchTerm={setSearchTerm}
+//               sortBy={sortBy}
+//               setSortBy={setSortBy}
+//               chartRange={chartRange}
+//               setChartRange={setChartRange}
+//             />
+
+//             {filteredCoins.length > 0 ? (
+//               viewMode === 'cards' ? (
+//                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+//                   {filteredCoins.map((coin) => (
+//                     <CoinCard
+//                       key={coin.id}
+//                       coin={coin}
+//                       chartRange={chartRange}
+//                       onTrade={handleTrade}
+//                       walletConnected={!!walletAddress}
+//                     />
+//                   ))}
+//                 </div>
+//               ) : (
+//                 <AssetTable
+//                   assets={filteredCoins}
+//                   onTrade={handleTrade}
+//                   walletConnected={!!walletAddress}
+//                 />
+//               )
+//             ) : (
+//               <div className="text-center py-12">
+//                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+//                 <p className="text-gray-500">Loading market data...</p>
+//               </div>
+//             )}
+//           </>
+//         )}
+
+//         {isBuyModalOpen && selectedCoin && (
+//           <BuySellModal
+//             coin={selectedCoin}
+//             tradeType={tradeType}
+//             onClose={handleCloseModal}
+//             walletAddress={walletAddress}
+//             aptosClient={aptos}
+//             connectedWallet={connectedWallet}
+//           />
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default App;
+
+
+
+
+
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './index.css';
@@ -3486,19 +4099,20 @@ import AssetTable from './components/AssetTable';
 import SummaryHeader from './components/SummaryHeader';
 
 const aptos = new AptosClient('https://fullnode.mainnet.aptoslabs.com');
-
 const COIN_LIST = 'bitcoin,ethereum,uniswap,aave,curve-dao-token,chainlink,litecoin,maker,compound-governance-token,the-graph,optimism,arbitrum,avalanche-2,solana,toncoin';
 
 function App() {
-  // State management
   const [coins, setCoins] = useState([]);
   const [filteredCoins, setFilteredCoins] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('rank');
   const [chartRange, setChartRange] = useState('7d');
-  const [walletAddress, setWalletAddress] = useState(null);
+  const [walletAddress, setWalletAddress] = useState(localStorage.getItem('walletAddress') || null);
   const [aptosBalance, setAptosBalance] = useState(null);
-  const [connectedWallet, setConnectedWallet] = useState(null);
+  const [connectedWallet, setConnectedWallet] = useState(() => {
+    const stored = localStorage.getItem('connectedWallet');
+    return stored ? JSON.parse(stored) : null;
+  });
   const [profileTab, setProfileTab] = useState(false);
   const [selectedCoin, setSelectedCoin] = useState(null);
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
@@ -3506,7 +4120,27 @@ function App() {
   const [viewMode, setViewMode] = useState('cards');
   const [loading, setLoading] = useState(false);
 
-  // Fetch balance when wallet address changes
+  useEffect(() => {
+    const CLI_WALLET = 'cc5e97e0015543dfac2d3e686fed214a7450e5c1efe15786dfde118987c3fbec';
+    const mockWallet = {
+      address: CLI_WALLET,
+      wallet: 'CLI',
+      provider: {
+        signAndSubmitTransaction: async (payload) => {
+          alert('🧪 Simulated CLI TX:\n' + JSON.stringify(payload, null, 2));
+          return { hash: 'cli_simulated_tx_hash' };
+        },
+      },
+    };
+
+    if (!walletAddress && !connectedWallet) {
+      setWalletAddress(CLI_WALLET);
+      setConnectedWallet(mockWallet);
+      localStorage.setItem('walletAddress', CLI_WALLET);
+      localStorage.setItem('connectedWallet', JSON.stringify(mockWallet));
+    }
+  }, []);
+
   useEffect(() => {
     const fetchBalance = async () => {
       if (walletAddress) {
@@ -3515,48 +4149,41 @@ function App() {
           const balance = await aptosClient.getAptosBalance(walletAddress);
           setAptosBalance(balance);
         } catch (error) {
-          console.error('Failed to fetch balance:', error);
+          console.error('Balance fetch failed:', error);
           setAptosBalance(0);
         } finally {
           setLoading(false);
         }
-      } else {
-        setAptosBalance(null);
       }
     };
-
     fetchBalance();
   }, [walletAddress]);
 
-  // Legacy wallet connection handler (for compatibility)
   const handleConnectWallet = async () => {
     try {
       setLoading(true);
       const availableWallets = getAvailableWallets();
-      
       if (availableWallets.length === 0) {
-        alert(
-          "No Aptos wallets detected.\n\nPlease install one of the following:\n🔸 Martian: https://martianwallet.xyz/\n🔹 Petra: https://petra.app/\n🟣 Fewcha: https://fewcha.app/\n🟢 Rise: https://risewallet.io/"
-        );
+        alert('No Aptos wallets found.\n\nInstall:\n🔸 Martian\n🔹 Petra\n🟣 Fewcha\n🟢 Rise');
         return;
       }
-
       const wallet = await connectWallet();
       setWalletAddress(wallet.address);
       setConnectedWallet(wallet);
+      localStorage.setItem('walletAddress', wallet.address);
+      localStorage.setItem('connectedWallet', JSON.stringify(wallet));
     } catch (error) {
-      console.error('Error connecting wallet:', error);
+      console.error('Wallet connect error:', error);
       alert(error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch coin data from API
   useEffect(() => {
     const fetchCoinData = async () => {
       try {
-        const response = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+        const res = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
           params: {
             vs_currency: 'usd',
             ids: COIN_LIST,
@@ -3565,65 +4192,48 @@ function App() {
             price_change_percentage: '1h,24h,7d',
           },
         });
-        
-        setCoins(response.data);
-        setFilteredCoins(response.data);
-      } catch (error) {
-        console.error('Error fetching coin data:', error);
+        setCoins(res.data);
+        setFilteredCoins(res.data);
+      } catch (err) {
+        console.error('Coin data fetch failed:', err);
       }
     };
-
     fetchCoinData();
   }, []);
 
-  // Filter and sort coins
   useEffect(() => {
-    let filteredData = [...coins];
-
-    // Apply search filter
+    let filtered = [...coins];
     if (searchTerm) {
-      filteredData = filteredData.filter((coin) =>
-        coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter((c) =>
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.symbol.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
-    // Apply sorting
-    if (sortBy === 'volume') {
-      filteredData.sort((a, b) => b.total_volume - a.total_volume);
-    } else {
-      filteredData.sort((a, b) => a.market_cap_rank - b.market_cap_rank);
-    }
-
-    setFilteredCoins(filteredData);
+    filtered.sort((a, b) =>
+      sortBy === 'volume' ? b.total_volume - a.total_volume : a.market_cap_rank - b.market_cap_rank
+    );
+    setFilteredCoins(filtered);
   }, [searchTerm, sortBy, coins]);
 
-  // Trade handler
   const handleTrade = (coin, isBuy) => {
-    if (!walletAddress) {
-      alert('Please connect your wallet first');
-      return;
-    }
+    if (!walletAddress) return alert('Connect wallet first');
     setSelectedCoin(coin);
     setTradeType(isBuy ? 'buy' : 'sell');
     setIsBuyModalOpen(true);
   };
 
-  // Close modal handler
   const handleCloseModal = () => {
     setIsBuyModalOpen(false);
     setSelectedCoin(null);
   };
 
-  // Toggle view mode
   const toggleViewMode = () => {
     setViewMode(viewMode === 'cards' ? 'table' : 'cards');
   };
 
-  // Calculate market statistics
   const marketSize = filteredCoins.reduce((sum, coin) => sum + (coin.market_cap || 0), 0);
   const totalBorrowed = filteredCoins.reduce((sum, coin) => sum + (coin.total_volume || 0), 0);
-  const lentOut = marketSize > 0 ? ((totalBorrowed / marketSize) * 100).toFixed(2) : 0;
+  const lentOut = marketSize ? ((totalBorrowed / marketSize) * 100).toFixed(2) : 0;
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white">
@@ -3649,14 +4259,13 @@ function App() {
         )}
 
         {profileTab ? (
-          <ProfileDashboard 
-            walletAddress={walletAddress} 
+          <ProfileDashboard
+            walletAddress={walletAddress}
             aptosBalance={aptosBalance}
             connectedWallet={connectedWallet}
           />
         ) : (
           <>
-            {/* Welcome Section for Non-Connected Users */}
             {!walletAddress && (
               <div className="text-center py-12 mb-8">
                 <h1 className="text-4xl font-bold mb-4">Welcome to ELEGENT Card</h1>
@@ -3740,8 +4349,8 @@ function App() {
                   ))}
                 </div>
               ) : (
-                <AssetTable 
-                  assets={filteredCoins} 
+                <AssetTable
+                  assets={filteredCoins}
                   onTrade={handleTrade}
                   walletConnected={!!walletAddress}
                 />
